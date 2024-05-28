@@ -60,14 +60,14 @@ export class Game {
     }
 
     if (this.board.moves.length % 2 === 0) {
-      this.player2.emit(
+      this.player2.send(
         JSON.stringify({
           type: "move",
           payload: move,
         })
       );
     } else {
-      this.player1.emit(
+      this.player1.send(
         JSON.stringify({
           type: "move",
           payload: move,
