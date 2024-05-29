@@ -7,7 +7,7 @@ export class GameManager {
   private users: WebSocket[];
 
   constructor() {
-    this.games = {};
+    this.games = [];
     this.pendingUser = null;
     this.users = [];
   }
@@ -38,21 +38,28 @@ export class GameManager {
       // }
       if (message.type === "create") {
         const code = "dwij2";
-        this.games[code] = {
+        let gameObj = {
           code,
           player1: socket,
           player2: null,
         };
+        this.games.push(gameObj);
+        console.log(this.games);
         socket.send(JSON.stringify({ type: "created", code }));
       }
 
       if (message.type === "join") {
         const code = message.code;
-        const game = this.games[code];
+        const game = this.games.find((game: any) => game.code === code);
+        console.log(game, "Accepted");
         if (game && !game.player2) {
           game.player2 = socket;
-          game.player1!.send(JSON.stringify({ type: "joined", code }));
-          game.player2.send(JSON.stringify({ type: "joined", code }));
+          game.player1!.send(
+            JSON.stringify({ type: "Game started", message: "You are white" })
+          );
+          game.player2.send(
+            JSON.stringify({ type: "Game started", message: "You are black" })
+          );
         } else {
           socket.send(
             JSON.stringify({
@@ -63,14 +70,14 @@ export class GameManager {
         }
       }
 
-      // if (message.type === "move") {
-      //   const game = this.games.find(
-      //     (game) => game.player1 === socket || game.player2 === socket
-      //   );
-      //   if (game) {
-      //     game.makeMove(socket, message.move);
-      //   }
-      // }
+      if (message.type === "move") {
+        const game = this.games.find(
+          (game: any) => game.player1 === socket || game.player2 === socket
+        );
+        if (game) {
+          game.makeMove(socket, message.move);
+        }
+      }
     });
   }
 }
