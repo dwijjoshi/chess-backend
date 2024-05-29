@@ -26,13 +26,32 @@ export class GameManager {
     socket.on("message", (data) => {
       const message = JSON.parse(data.toString());
 
-      if (message.type === "init_game") {
-        if (this.pendingUser) {
-          const game = new Game(this.pendingUser, socket);
-          this.games.push(game);
-          this.pendingUser = null;
+      if (message.type === "create") {
+        const code = "dwij2";
+        const game = new Game(socket, null, code);
+        this.games.push(game);
+        socket.send(JSON.stringify({ type: "created", code }));
+      }
+
+      if (message.type === "join") {
+        const code = message.code;
+        const game = this.games.find((game: any) => game.code === code);
+        console.log(game, "Accepted");
+        if (game && !game.player2) {
+          game.player2 = socket;
+          game.player1!.send(
+            JSON.stringify({ type: "Game started", message: "You are white" })
+          );
+          game.player2.send(
+            JSON.stringify({ type: "Game started", message: "You are black" })
+          );
         } else {
-          this.pendingUser = socket;
+          socket.send(
+            JSON.stringify({
+              type: "error",
+              message: "Invalid code or game already full",
+            })
+          );
         }
       }
 
