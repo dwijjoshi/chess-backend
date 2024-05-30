@@ -48,37 +48,38 @@ export class Game {
     }
     try {
       this.board.move(move);
-    } catch (error) {}
+      if (this.board.isGameOver()) {
+        this.player1.send(
+          JSON.stringify({
+            type: "gameover",
+            payload: {
+              winner: this.board.turn() === "w" ? "black" : "white",
+            },
+          })
+        );
+        return;
+      }
 
-    if (this.board.isGameOver()) {
-      this.player1.send(
-        JSON.stringify({
-          type: "gameover",
-          payload: {
-            winner: this.board.turn() === "w" ? "black" : "white",
-          },
-        })
-      );
-      return;
-    }
-
-    if (this.moveCount % 2 === 0) {
-      if (this.player2) {
-        this.player2.send(
+      if (this.moveCount % 2 === 0) {
+        if (this.player2) {
+          this.player2.send(
+            JSON.stringify({
+              type: "move",
+              payload: move,
+            })
+          );
+        }
+      } else {
+        this.player1.send(
           JSON.stringify({
             type: "move",
             payload: move,
           })
         );
       }
-    } else {
-      this.player1.send(
-        JSON.stringify({
-          type: "move",
-          payload: move,
-        })
-      );
+      this.moveCount++;
+    } catch (e) {
+      console.log(e);
     }
-    this.moveCount++;
   }
 }

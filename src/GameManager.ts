@@ -25,9 +25,8 @@ export class GameManager {
   private addHandler(socket: WebSocket) {
     socket.on("message", (data) => {
       const message = JSON.parse(data.toString());
-
+      const code = message.code;
       if (message.type === "create") {
-        const code = "dwij2";
         const game = new Game(socket, null, code);
         this.games.push(game);
         socket.send(JSON.stringify({ type: "created", code }));
